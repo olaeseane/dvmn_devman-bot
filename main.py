@@ -40,7 +40,6 @@ def main():
         try:
             response = requests.get(
                 DVMN_API_URL, headers=headers, params=params)
-            print('requests.getting...')
             response.raise_for_status()
         except requests.exceptions.HTTPError as http_err:
             print(f'HTTP error occurred - {http_err}')
