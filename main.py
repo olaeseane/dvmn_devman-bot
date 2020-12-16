@@ -1,26 +1,25 @@
 import os
-import requests
 import time
 from dotenv import load_dotenv
-from requests.exceptions import HTTPError
-from requests.exceptions import ReadTimeout
-from requests.exceptions import ConnectionError
+import requests
 import telegram
 
 
-API_DVMN_API_URL = 'https://dvmn.org/api/long_polling/'
+DVMN_API_URL = 'https://dvmn.org/api/long_polling/'
 MAX_CONNECTION_ERROR = 5
-LAST_ATTEMPT_INDEX = 0
+MSG_OK = '''У вас проверили работу "{}". 
+К сожалению, в работе есть ошибки'''
+MSG_ERRORS = '''У вас проверили работу "{}". 
+Преподавателю все понравилось, можно приступать к следующему уроку'''
 
 
 def send_notification(bot, my_chat_id, user_reviews):
-    last_attempt = user_reviews['new_attempts'][LAST_ATTEMPT_INDEX]
-    if last_attempt['is_negative'] == True:
-        message = f'У вас проверили работу \"{last_attempt["lesson_title"]}\".\nК сожалению, в работе есть ошибки'
+    last_attempt = user_reviews['new_attempts'][0]
+    if last_attempt['is_negative']:
+        message = MSG_OK.format(last_attempt['lesson_title'])
     else:
-        message = f'У вас проверили работу \"{last_attempt["lesson_title"]}\".\nПреподавателю все понравилось, можно приступать к следующему уроку'
-    bot.send_message(
-        chat_id=my_chat_id, text=message)
+        message = MSG_ERRORS.format(last_attempt['lesson_title'])
+    bot.send_message(chat_id=my_chat_id, text=message)
 
 
 def main():
@@ -40,12 +39,14 @@ def main():
     while True:
         try:
             response = requests.get(
-                API_DVMN_API_URL, headers=headers, params=params)
+                DVMN_API_URL, headers=headers, params=params)
             print('requests.getting...')
             response.raise_for_status()
-        except HTTPError as http_err:
+        except requests.exceptions.HTTPError as http_err:
             print(f'HTTP error occurred - {http_err}')
-        except ConnectionError as conn_err:
+        except requests.exceptions.ReadTimeout:
+            pass
+        except requests.exceptions.ConnectionError as conn_err:
             print(f'Connection error occurred - {conn_err}')
             connection_attempts += 1
             if connection_attempts > MAX_CONNECTION_ERROR:
