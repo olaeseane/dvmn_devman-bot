@@ -3,6 +3,7 @@ import time
 import requests
 import telegram
 import logging
+from dotenv import load_dotenv
 
 
 DVMN_API_URL = 'https://dvmn.org/api/long_polling/'
@@ -14,7 +15,7 @@ MSG_ERRORS = '''У вас проверили работу "{}".
 
 
 class BotLogsHandler(logging.Handler):
-    def __init__(self, bot, chat_id):
+    def __init__(self, chat_id):
         self.bot = telegram.Bot(token=os.getenv('BOT_LOGGER_TOKEN'))
         self.my_chat_id = chat_id
         super().__init__()
@@ -34,6 +35,8 @@ def send_notification(bot, my_chat_id, user_reviews):
 
 
 def main():
+    load_dotenv()
+
     api_dvmn_token = os.getenv('API_DVMN_TOKEN')
     headers = {
         'Authorization': f'Token {api_dvmn_token}'
@@ -45,8 +48,6 @@ def main():
     bot = telegram.Bot(token=os.getenv('BOT_MAIN_TOKEN'))
 
     logger = logging.getLogger('bot-logger')
-    logger.basicConfig(
-        level=logging.INFO, format='%(process)d - %(levelname)s - %(asctime)s - %(message)s')
     logger.setLevel(logging.INFO)
     logger.addHandler(BotLogsHandler(my_chat_id))
     logger.info('Bot has started')
@@ -58,7 +59,6 @@ def main():
                 DVMN_API_URL, headers=headers, params=params)
             response.raise_for_status()
             user_reviews = response.json()
-            0/0
             if user_reviews['status'] == 'timeout':
                 params['timestamp'] = user_reviews['timestamp_to_request']
             elif user_reviews['status'] == 'found':
