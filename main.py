@@ -3,6 +3,7 @@ import time
 from dotenv import load_dotenv
 import requests
 import telegram
+import logging
 
 
 DVMN_API_URL = 'https://dvmn.org/api/long_polling/'
@@ -23,6 +24,9 @@ def send_notification(bot, my_chat_id, user_reviews):
 
 
 def main():
+    logging.basicConfig(
+        level=logging.INFO, format='%(process)d - %(levelname)s - %(asctime)s - %(message)s')
+
     load_dotenv()
     api_dvmn_token = os.getenv('API_DVMN_TOKEN')
     headers = {
@@ -37,6 +41,7 @@ def main():
 
     connection_attempts = 0
     while True:
+        logging.info('Бот запущен.')
         try:
             response = requests.get(
                 DVMN_API_URL, headers=headers, params=params)
