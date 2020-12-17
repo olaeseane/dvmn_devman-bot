@@ -12,7 +12,9 @@ pip install -r requirements.txt
 After setup environment variables in `.env` file
 ```
 API_DVMN_TOKEN=access token for API Devman
-BOT_DVMN_TOKEN=bot token for notification
+BOT_MAIN_TOKEN=bot token for notification
+BOT_LOGGER_TOKEN=bot-logger token
+MY_TELEGRAM_CHAT_ID=chat id to send a message
 ```
 
 ### How to run
